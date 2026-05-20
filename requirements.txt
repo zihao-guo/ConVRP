@@ -3,11 +3,18 @@
 # Primary setup command from the repository root:
 #   source scripts/activate_env.sh
 #
-# That command creates the required conda environment if it is missing,
-# installs or verifies this requirements file, and activates the environment.
+# That command runs conda environment creation, installs this requirements
+# file, and activates the environment.
 #
-# Existing environment expected by the reproduction workflow:
-#   /home/zeio99/miniconda3/envs/p3-cvrpsd
+# Conda root detection order:
+#   CONDA_ROOT, current CONDA_EXE, $HOME/miniconda3, $HOME/anaconda3, /opt/conda
+#
+# Default environment path:
+#   $CONDA_ROOT/envs/p3-cvrpsd
+#
+# Override example:
+#   CONDA_ROOT=/path/to/miniconda3 source scripts/activate_env.sh
+#   CONDA_ENV=/path/to/miniconda3/envs/p3-cvrpsd source scripts/activate_env.sh
 #
 # Gurobi license:
 #   Put the license at /mnt/c/Users/User/Downloads/gurobi.lic, or export

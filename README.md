@@ -7,7 +7,7 @@ Alvarez, A., Cordeau, J.-F., and Jans, R. (2024). *The consistent vehicle routin
 The intended solver difference is explicit:
 
 - Paper: CPLEX 22.1
-- This reproduction: Gurobi from `/home/zeio99/miniconda3/envs/p3-cvrpsd`
+- This reproduction: Gurobi from `$CONDA_ROOT/envs/p3-cvrpsd`
 
 The project is guarded against claiming a full reproduction before all required runs are complete. A final report may claim full reproduction only when all 138 instances and all four methods (`BC`, `BD`, `SAA-BC`, `SAA-BD`) have completed, all paper-alignment tables have been regenerated, and the final guard passes.
 
@@ -16,10 +16,13 @@ The project is guarded against claiming a full reproduction before all required 
 The scripts expect the same local paths used during development:
 
 ```bash
-CONDA_ENV=/home/zeio99/miniconda3/envs/p3-cvrpsd
+CONDA_ROOT=/path/to/miniconda3
+CONDA_ENV=$CONDA_ROOT/envs/p3-cvrpsd
 DATA_ROOT=/mnt/e/currentWORK/AAA_Project/P3/data
 ROOT=/home/zeio99/Alv
 ```
+
+`scripts/activate_env.sh` auto-detects conda from `CONDA_ROOT`, the current `CONDA_EXE`, `$HOME/miniconda3`, `$HOME/anaconda3`, or `/opt/conda`.
 
 The canonical optimization inputs are the 138 processed JSON instances under:
 
@@ -34,7 +37,7 @@ Do not use legacy `processed/instances/**` files as optimization inputs.
 
 Python dependencies and the from-scratch conda bootstrap are documented in `requirements.txt`.
 
-Create or synchronize the required environment, install dependencies, and activate it:
+Create the required environment, install dependencies, and activate it:
 
 ```bash
 source scripts/activate_env.sh
