@@ -1,0 +1,8 @@
+row_key,method,metric,paper_value
+sample_time=30;M=20;N=5,SAA-BC,number_of_instances,138
+sample_time=30;M=20;N=5,SAA-BC,total_cost,253.01
+sample_time=30;M=20;N=5,SAA-BC,total_time_seconds,15263
+sample_time=30;M=20;N=5,SAA-BC,time_to_best_seconds,7145
+sample_time=30;M=20;N=5,SAA-BC,opt_gap_percent,16.0
+sample_time=30;M=20;N=5,SAA-BC,sample_gap_percent,10.83
+sample_time=30;M=20;N=5,SAA-BC,selected_for_main_experiments,True

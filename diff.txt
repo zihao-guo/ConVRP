@@ -1,0 +1,97 @@
+本文档用中文记录复现实验与论文《The Consistent Vehicle Routing Problem with Stochastic Customers and Demands》之间的所有差异、不可复现点、以及为保证代码可运行而做出的实现偏差。
+
+当前状态：
+- 尚未确认任何论文差异。
+- 预期唯一差异为求解器：论文使用 CPLEX 22.1，本复现使用 `/home/zeio99/miniconda3/envs/p3-cvrpsd` 中的 Gurobi。
+- 后续如发现数据格式、模型约束、SEC 分离、BD cut、SAA 抽样、时间限制或表格统计口径与论文不一致，必须在本文件记录具体位置、原因和代码处理方式。
+
+2026-05-19：
+- 当前没有进入模型或实验复现阶段，原因是 Gurobi 许可证检查未通过。
+- `/home/zeio99/miniconda3/envs/p3-cvrpsd` 中可以导入 `gurobipy`，版本为 13.0.1，但 `GRB_LICENSE_FILE=/mnt/d/P3/gurobi.lic` 无法打开；对该路径执行 `ls` 返回 `Input/output error`。
+- 这不是论文方法差异，而是本地环境阻塞。根据用户要求，已创建 `BUG-ENV-GUROBI` 并将 workflow 状态设为 `BLOCKED`，在许可证可用前不继续实现模型，避免产生无法验证的复现结果。
+- 已根据用户提供的许可证位置 `/mnt/c/Users/User/Downloads/gurobi.lic` 修复环境配置。`scripts/activate_env.sh` 会在该文件存在时设置 `GRB_LICENSE_FILE`。
+- 已通过 `scripts/check_environment.py` 验证 Gurobi 13.0.1 可非交互式求解最小 MIP，参数包含 `Threads=1`、`MIPGap=1e-5`、`LazyConstraints=1`。workflow 已从 `BLOCKED` 转为 `ENV_CHECK`。
+- 数据审计阶段发现 manifest.csv 的 `out` 列使用 `data/processed/...` 前缀，而本项目配置的数据根目录已经是 `/mnt/e/currentWORK/AAA_Project/P3/data`。这不是论文差异，而是本地生成数据的路径记法差异；代码在验证 manifest 时只规范化这个前缀，不改变实例内容。
+- 数据目录中存在 `processed/instances/**` 旧版/中间 JSON，其 schema 与 canonical 的 138 个 `processed/omega{100,500}/{A,B,D}/*.json` 不同。为避免误读，`DATA_FORMAT.md` 明确规定优化器只读取 canonical 138 个 JSON；这不是论文差异。
+
+## BranchCutAgent implementation deviation - 2026-05-19
+
+- `src/alv/branch_cut.py` implements integer incumbent SEC separation only, using Gurobi `LazyConstraints=1` and a `MIPSOL` callback with `cbGetSolution` and `cbLazy`.
+- Fractional min-cut separation is not implemented in this branch-cut layer.
+
+## BendersAgent implementation deviation - 2026-05-19
+
+- `src/alv/benders.py` implements a BD-like iterative master/subproblem loop, not exact paper branch-and-check.
+- The master contains first-stage `y/s/lambda` and scenario `theta_omega`, starts with the prompt-specified lower-bound cuts, evaluates every scenario subproblem for every candidate `y`, and adds the prompt-specified integer optimality cut formula recorded in `reports/subagents/06_benders.md`.
+- Exact branch-and-check is not claimed because no Gurobi master incumbent callback is integrated in this pass. The current code solves the master to an incumbent, separates cuts after the solve, and re-solves. Scenario subproblems now use lazy SEC separation, but the master Benders cuts are still not separated inside the branch-and-bound tree.
+- `src/alv/saa.py` 中的 `SAA-BD` 调用当前 `BD-like` 方法，因此后续所有 SAA-BD 对齐表必须标注 BD 实现偏差，不能当作论文 exact BD。
+
+*！！！* 2026-05-19 最终报告禁止声称“完整复现成功”的当前原因：
+- 138 个实例尚未全部运行完成。当前 `results/processed/result_completeness.json` 显示 `complete=false`，预期 `552 = 138 * 4` 个 method-instance raw results，当前 `total_raw_results=0`。
+- BC、BD、SAA-BC、SAA-BD 四类目标方法尚未全部完成全量运行。
+- 论文要求对齐的表格尚未全部生成：`table_1_alignment.csv`、`table_2_alignment.csv`、`table_3_alignment.csv`、`appendix_b11_alignment.csv`、`appendix_b12_alignment.csv` 均未生成。
+- 当前差异不只来自 CPLEX 到 Gurobi：`BC` 仍记录为 `integer_lazy_sec_only`，`BD` 仍记录为 `BD-like`，这些属于算法实现偏差，不是微小数值误差。
+- 已新增 `scripts/final_report_guard.py`，其当前输出 `can_claim_full_reproduction=false`，blocking reasons 包含 `full_experiment_results_incomplete`、`bd_not_exact_branch_and_check`、`bc_sec_deviation_not_solver_only`、`alignment_tables_missing`。
+- 已新增 blocker tickets：`BUG-METHOD-BD-EXACT`、`BUG-METHOD-BC-SEC`、`BUG-FULL-EXPERIMENT-NOT-RUN`。workflow 已转为 `BLOCKED`，直到这些 blocker 被修复并经 DebugAgent 验证，最终报告不得写“完整复现成功”。
+
+*！！！* 2026-05-19 PDF 逐项比对新增不一致，最终报告仍禁止声称“完整复现成功”：
+- 模型二阶段变量定义已根据 PDF 第 6-8 页公式 (1)、(3)-(8)、(13)-(15) 修正：`z` 和 `x` 现在只在每个场景实际出现的 `C_omega` 与 `E_omega` 上创建，目标函数的 travel/skipping 也只遍历 `E_omega`/`C_omega`。此前实现把缺席客户也放入二阶段变量域，已在 `src/alv/model.py`、`src/alv/branch_cut.py` 和 `tests/test_model_core.py` 修复并验证。这项已修复，不再作为论文差异保留。
+- PDF 第 11 页 Section 3.2.1 明确说明 BC 使用基于 minimum s-t cut 的精确 SEC 分离，并且在根节点和每次整数解出现时分离。已在 `src/alv/branch_cut.py` 增加根节点 `MIPNODE` fractional SEC 分离，使用内部 Edmonds-Karp max-flow/min-cut 例程代替论文中的 Concorde min-cut；整数 incumbent 仍通过 `MIPSOL` lazy SEC 分离。该项比之前更接近论文，但尚未验证为完全等价于论文 Concorde 例程，因此 `BUG-METHOD-BC-SEC` 仍保持 open。
+- PDF 第 12 页 Section 3.2.1 明确说明 BC Base method 包含 primal heuristic：每次得到整数解时固定当前 `y`，求解所有场景子问题，如果原问题可行解更优则作为 incumbent。当前 `src/alv/branch_cut.py` 没有该 heuristic。PDF Appendix A Table A.9 还单独报告了 `No primal`，说明 primal heuristic 是论文 Base BC 的组成部分。已新增 `BUG-METHOD-BC-PRIMAL-HEURISTIC`。
+- 这里还有一个实现约束冲突需要后续深度处理：用户给定的 Gurobi callback contract 明确要求 callback 中不得调用 `model.optimize()`，而论文 BC primal heuristic 的自然实现是在整数解 callback 中求解所有场景子问题。后续若实现该 heuristic，必须采用不违反 Gurobi callback contract 的方式；若无法做到，则所有 BC/SAA-BC 相关结果必须明确标记为算法实现偏差，不能归因于 CPLEX/Gurobi。
+- PDF 第 13-14 页 Section 3.2.2 明确说明 BD 是 branch-and-check：MP 只求解一次，在 MP 的 branch-and-bound 树中每次出现 feasible `(y*, theta*)` 就求解所有场景子问题并 on-the-fly 加 cut。当前 `src/alv/benders.py` 是迭代式 BD-like，虽然实现了初始下界 cut、整数 optimality cut 和“即使早发现 cut 也评估所有场景”的要求，但不是论文 exact BD。`BUG-METHOD-BD-EXACT` 继续保持 blocker。
+- PDF 第 9-10 页 Section 3.1 要求 SAA 计算统计下界 `bar_nu_Omega`、其方差、incumbent full-Omega 评估方差、SAA gap 及方差；PDF Appendix B 第 28-29 页还要求输出 `Opt gap (%)` 与 `Sample gap (%)`。已在 `src/alv/saa.py` 增加 `compute_saa_statistics`，并在 `scripts/run_single.py` 写出 `saa_statistics`、sample objectives 与 lower bounds；但全量实验结果和 TableAlignmentAgent 尚未生成这些表，因此 `BUG-SAA-STATS` 暂不关闭，`method_status.SAA=statistics_implemented_not_table_aligned`，最终报告仍不得声称完整复现。
+- PDF 第 14 页数据描述中先写 Set A contains 10 instances，随后又写 considered the 12 instances of set A；同页又说明最终来自 23 个 deterministic instances。用户指定和当前数据均为 A/B/D = 10 + 7 + 6 = 23，因此这里按 23 总数和 Table 2/Table 3 的 138 实例口径执行，记录为论文文字歧义/疑似笔误，不改数据、不硬编码结果。
+- 已生成便于阅读的论文参考表与标准对齐表：`results/tables/PAPER_TABLES.md`、`paper_table_1_method_comparison.csv`、`paper_table_2_gap_by_omega_and_set.csv`、`paper_table_3_saa_bc_solution_attributes.csv`、`paper_appendix_b11_saa_bc.csv`、`paper_appendix_b12_saa_bd.csv`，以及对应 `*_alignment.csv`。由于 552 个 full experiment raw results 尚未产生，对齐表中的复现值为空且状态为 `not_run`，这是事实状态，不代表完成复现。
+- 已新增 `configs/experiment_protocol.json` 并在 `scripts/submit_full.py` 锁定论文时间协议：BC/BD standalone 使用 full Omega、10 小时；SAA-BC/SAA-BD 每个 sample problem 30 分钟，full-Omega evaluation 时间额外计算。`scripts/run_single.py` 会把 time limit、threads、MIPGap、SAA replication/sample size/sample time limit 写入 raw result，便于后续审计。
+- 2026-05-19 全量实验提交：用户再次明确“务必是全量实验”后，已新增并使用 `scripts/submit_full_queue.py` 提交完整 552 个 method-instance 任务（138 个实例 × BC/BD/SAA-BC/SAA-BD）。为避免一次性启动 552 个求解进程，采用 queue manager，当前并发为 2，后台 tmux session 为 `alv_full_experiment_manager`。这不是 subset/limit run。注意：由于 BC primal heuristic、BD exact branch-and-check 等方法偏差仍未修复，本次全量运行结果在最终对齐时仍必须如实标记实现偏差，不能仅归因于 CPLEX/Gurobi。
+
+*！！！* 2026-05-19 最新状态，最终报告仍不得声称“完整复现成功”：
+- `BUG-METHOD-BD-EXACT` 已修复：`src/alv/benders.py` 现在使用 Gurobi master `MIPSOL` callback，在 master branch-and-bound 过程中求解所有场景子问题并用 `cbLazy` 加论文整数 optimality cuts；`method_status.BD=paper_equivalent`。
+- `BUG-METHOD-BC-SEC` 已修复：`src/alv/branch_cut.py` 现在在 root `MIPNODE` 做 fractional min-cut SEC user cuts，并在整数 incumbent 做 lazy SEC；内部 Edmonds-Karp exact min-cut 作为 Concorde min-cut 的实现替代，数学上仍是 exact min-cut。
+- `BUG-METHOD-BC-PRIMAL-HEURISTIC` 已修复：BC Base method 现在在整数解处固定当前 `y`，求解每个场景子问题并用 `cbSetSolution` 注入完整候选解。为避免重复 first-stage `y` 造成无意义重复计算，对相同 `y` 只执行一次 heuristic；这不改变候选解集合，因为固定 `y` 后 heuristic 子问题相同。
+- 已修复 SAA raw schema：`scripts/run_single.py` 现在写出 `best_full_omega_evaluation`、travel/consistency/skipping decomposition、skipped-customer percentage、cluster count、violation level、`time_to_best_seconds` 和 SAA statistics，供 Table 3 与 Appendix B 对齐。
+- 曾启动过的预修复/预 schema 全量队列已停止并归档到 `results/archive_non_paper_equivalent/20260519_181915/` 与 `results/archive_schema_pre_table3/20260519_183132/`，不会被 `check_result_completeness.py` 计入最终 552 个 paper-equivalent raw results。
+- 已重新提交 corrected full queue：552 jobs、138 instances、BC/BD/SAA-BC/SAA-BD、并发 2，manager 为 `tmux:alv_full_experiment_manager`，monitor 为 `tmux:alv_full_experiment_monitor`。
+- 当前仍不能声称完整复现成功的原因只剩执行与对齐未完成：`BUG-FULL-EXPERIMENT-NOT-RUN` 仍为 `in_progress`；`results/processed/result_completeness.json` 仍显示 `complete=false`；alignment 表在全量 raw 完成前仍含 `not_run` 行。
+- 后续必须等待 552 个 corrected raw results 全部完成，运行 `scripts/check_result_completeness.py` 得到 `complete=true`，再运行 `scripts/generate_alignment_tables.py` 生成五张对齐表，最后运行 `scripts/final_report_guard.py`。只有 guard 输出 `can_claim_full_reproduction=true` 后，最终报告才允许写“完整复现成功”。
+- 进一步审计发现 BD callback 中的场景子问题必须继承 master 剩余 time limit，否则墙钟时间可能超过论文 10 小时/30 分钟协议。已在 `src/alv/benders.py` 增加 callback remaining-time 传递，并新增 `tests/test_benders.py::test_scenario_subproblem_accepts_time_limit`。修复前的部分运行已归档到 `results/archive_time_protocol_fix/20260519_184434/`，不计入最终复现。
+
+*！！！* 2026-05-19 PDF 子问题公式再比对结果，最终全量实验已再次暂停并归档：
+- PDF 第 13 页 Section 3.2.2 的场景子问题公式 (21)-(30) 只包含固定 `y` 后的 recourse 变量 `z/x`、访问至多一次、度约束、depot 度约束、`z <= y*`、容量、SEC 与变量域；不包含完整模型中的 `lambda/s`、assignment activation、valid inequality (17)、也不包含 full model reference scenario 车辆顺序 SBC (16)。
+- 修复前 `src/alv/benders.py::evaluate_scenario_subproblem` 和 `src/alv/branch_cut.py::build_primal_heuristic_solution` 通过 `build_extensive_form` 构造单场景模型并固定 `y`。这样会把 full-model `sym_depot` 带入固定 `y` 场景子问题。最小反例 `tests.test_benders.BendersTests.test_scenario_subproblem_does_not_apply_full_model_vehicle_order_sbc` 在修复前失败：论文子问题目标应为 `2.0`，旧实现因错误 SBC 得到 `6.0`。
+- 已新增并修复 `BUG-METHOD-FIXED-Y-SUBPROBLEM-SBC`：`src/alv/subproblem.py` 现在直接实现 PDF (21)-(30) 的 fixed-y scenario subproblem，并带动态 SEC separation；BD callback、SAA full-Omega evaluation、BC primal heuristic 全部改为调用该共享子问题。
+- 同时纠正上一段关于 BC primal heuristic 的说明：论文要求“每次整数解”都执行该 heuristic。代码已移除对重复 first-stage `y` 的去重，保证每个 integer incumbent 都会尝试 heuristic；这与 PDF 第 12 页描述一致。
+- 修复后的 focused tests 通过：`tests.test_benders`、`tests.test_branch_cut`、`tests.test_saa`。完整单元测试套件 34 个测试通过。
+- 子问题修复前产生的 raw/registry/lock 已归档到 `results/archive_pdf_exact_subproblem_fix/20260519_190000/`，不会计入最终 552 个 paper-equivalent raw results。当前仍不得声称“完整复现成功”，因为最终全量实验需要基于该修复重新提交并跑完 552 个 method-instance jobs。
+
+*！！！* 2026-05-19 全量实验后台执行机制修复：
+- 这不是论文模型差异，但会影响能否完成全量实验。旧 `scripts/submit_full_queue.py` 的 worker 用 Python `subprocess.Popen` 启动长时间 Gurobi 子进程；在当前执行环境里，长 BD/SAA-BD 子进程会无 traceback 消失且不写 raw 文件，registry 留下 stale `running`。直接用 tmux session 启动同一 BD 命令可以稳定存活。
+- 已修复为：当系统有 tmux 时，每个 running job 使用独立 tmux session，queue manager 只负责调度和轮询；如果 manager 失效，job session 仍可继续。`poll_runs.py` 和 queue inference 也已改为：dead pid 或 missing tmux session 且 raw 缺失时状态回到 `pending`，避免 stale `running` 被误当作正在运行。
+- 当前全量队列以 concurrency=1 运行，这是本机调度并发设置，不改变论文每个模型的 `Threads=1`、MIPGap、BC/BD 10 小时、SAA sample 30 分钟协议。这样做是为了避免本地后台执行机制导致无 raw 退出；不把任何 subset 当作 full-paper reproduction。
+- 2026-05-19 进一步修复验收链路：`scripts/check_result_completeness.py` 现在默认刷新 `results/processed/result_completeness.json`，因为 `scripts/final_report_guard.py` 读取该文件。当前刷新后的结果仍为 `complete=false`、`total_raw_results=2`，所以 guard 正确输出 `can_claim_full_reproduction=false`。这不是论文差异，而是防止最终 guard 读取旧 completeness 状态。
+
+2026-05-19 PDF 一致性再确认：
+- 按用户要求，当前实现不得包含论文没有描述的“创新约束”或替代模型。已再次核对当前代码状态：完整模型 `src/alv/model.py` 保留 PDF formulation 中的一阶段变量 `y/s/lambda`、二阶段变量 `z/x`、consistency、visit-once、degree、depot-degree、linking、capacity、assignment activation、valid inequality、SBCs 和动态 SEC；二阶段变量和成本只在每个场景的 `C_omega/E_omega` 上创建。
+- 固定 `y` 的场景子问题 `src/alv/subproblem.py` 只实现 PDF Section 3.2.2 公式 (21)-(30)：`z/x`、visit-once、degree、depot-degree、`z <= y*`、capacity、SEC、travel + skipping objective。它明确不包含完整模型的一阶段 consistency、assignment activation、valid assignment inequality 或 reference-scenario vehicle-order SBC。
+- BC 的 Edmonds-Karp min-cut 只是求解论文 Concorde minimum `s-t` cut separation 的内部实现方式，分离的仍是同一 SEC cut family，不是新增约束族。若最终表格有差异，不能把算法偏差伪装为 solver difference；必须继续检查并记录。
+- BD 当前通过 master `MIPSOL` callback 做 branch-and-check，并在每个 feasible `(y*, theta*)` 上求解所有场景子问题后用 `cbLazy` 添加论文 integer optimality cut。旧的 iterative `BD-like` 函数保留在源码中但不被 `solve_benders_like`、`run_single.py` 或 `SAA-BD` 调用，不能用于最终 raw results。
+- SAA 当前按 PDF 主实验配置运行：SAA-BC `M=20, |N|=5`，SAA-BD `M=20, |N|=15`，sample problem time limit 30 分钟，standalone BC/BD 10 小时。
+*！！！* 当前仍不得声称“完整复现成功”：全量实验还只有 `2/552` 个 paper-equivalent raw results 完成，五张最终 alignment 表仍需等 552 个 raw results 完成后重新生成。
+
+2026-05-19 表格对齐脚本修正：
+- 发现 `scripts/generate_alignment_tables.py` 曾在 full experiment 未完成时，把已有的少量 paper-equivalent raw results 聚合进 `table_1_alignment.csv`、`table_2_alignment.csv`、`table_3_alignment.csv` 等 full-paper 行，导致出现 `number_of_instances=1` 这类子集值。这不符合用户要求“不得把子集结果当作 full-paper reproduction”。
+- 已新增并修复 `BUG-ALIGN-PARTIAL-AGGREGATION`：只有当 raw results 同时满足 138 个实例且每个实例都有 `BC`、`BD`、`SAA-BC`、`SAA-BD` 四种方法时，TableAlignmentAgent 才消费 raw 结果生成复现值。否则 alignment 表的 `our_value` 留空，`status=not_run`。
+- 已重新生成 `results/tables/*_alignment.csv` 和 `results/tables/PAPER_TABLES.md`。当前 alignment 表只作为论文基准和等待全量结果的占位，不再展示 2/552 子集聚合值。
+*！！！* 当前仍不得声称“完整复现成功”：`scripts/check_result_completeness.py` 最新输出 `complete=false`、`total_raw_results=2`；`scripts/final_report_guard.py` 仍输出 `can_claim_full_reproduction=false`。
+
+*！！！* 2026-05-19T19:47:53+02:00 最终报告禁止声明“完整复现成功”的再次确认：
+- 用户明确要求最终报告只有在四项条件同时满足时才能声明完整复现成功：138 个实例全部完成；`BC`、`BD`、`SAA-BC`、`SAA-BD` 全部完成；论文要求对齐表全部生成；差异仅来自 CPLEX 到 Gurobi 或微小数值误差。
+- 最新 `scripts/check_result_completeness.py` 输出：`complete=false`、`total_raw_results=2`、预期 `552`。当前只看到 `BC=1`、`SAA-BC=1` 个实例结果；`BD=0`、`SAA-BD=0` 个完成结果。因此第 1 条和第 2 条不满足。
+- 五张 alignment 表文件已存在，但由于 full raw results 未齐，表内状态仍为 `not_run`，`scripts/final_report_guard.py` 输出 `can_claim_full_reproduction=false`，blocking reasons 包含 `full_experiment_results_incomplete` 与 `alignment_contains_non_solver_deviation`。因此第 3 条只满足“文件存在”，不满足“可用于最终对齐结论”；第 4 条也不能判定为 solver-only 差异。
+- 后续必须继续监控当前 552-job full queue，等所有 raw results 完成后重新运行 completeness、重新生成 alignment tables、检查非 solver 差异，并且只有 final guard exit code 为 0 且 `can_claim_full_reproduction=true` 时，最终报告才允许写“完整复现成功”。
+
+2026-05-19 BD 中 SBC/VIs 的 PDF 歧义解释：
+- PDF 第 13 页在 BD lower-bound cut (32) 后写道 “We also use the SBCs and VIs of the BC method to enhance the BD method.” 但 BD master 公式 (19)-(20) 只含 `y/s/lambda/theta`，不含 routing 变量 `x`；fixed-y 场景子问题公式 (21)-(30) 也没有 BC 的 depot-degree vehicle-order SBC (16)。
+- 当前实现采取严格不改变论文子问题定义的解释：BD master 包含 VI (18) `sum_k y_ik >= 1` 和 `s_k <= s_{k-1}`；不把涉及 `x` 的 SBC (16) 加入 BD master，因为 master 没有 `x`；也不把 (16) 加入 fixed-y 子问题，因为固定 `y` 后再加车辆顺序约束会改变真实 recourse value `theta_omega(y*)`，不等价于 PDF (21)-(30)。
+- 这不是创新约束，也不是删改论文模型；相反，是为了避免把 full-model 车辆排序 SBC 错误带入 BD/SAA/BC heuristic 的 fixed-y 子问题。已有回归测试 `test_scenario_subproblem_does_not_apply_full_model_vehicle_order_sbc` 证明错误加入该 SBC 会把一个最小反例的 recourse objective 从 PDF 正确值 `2.0` 提高到 `6.0`。

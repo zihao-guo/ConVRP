@@ -1,0 +1,55 @@
+{
+  "alphas": [
+    0.2,
+    0.5,
+    0.8
+  ],
+  "base_instance_counts": {
+    "A": 10,
+    "B": 7,
+    "D": 6
+  },
+  "base_instance_names": {
+    "A": [
+      "convrp_10_test_1",
+      "convrp_10_test_2",
+      "convrp_10_test_3",
+      "convrp_10_test_4",
+      "convrp_10_test_5",
+      "convrp_12_test_1",
+      "convrp_12_test_2",
+      "convrp_12_test_3",
+      "convrp_12_test_4",
+      "convrp_12_test_5"
+    ],
+    "B": [
+      "Christofides_12_5_0.7",
+      "Christofides_1_5_0.7",
+      "Christofides_2_5_0.7",
+      "Christofides_3_5_0.7",
+      "Christofides_6_5_0.7",
+      "Christofides_7_5_0.7",
+      "Christofides_8_5_0.7"
+    ],
+    "D": [
+      "D_christofides_6_n20",
+      "D_christofides_6_n30",
+      "D_christofides_7_n20",
+      "D_christofides_7_n30",
+      "D_christofides_8_n20",
+      "D_christofides_8_n30"
+    ]
+  },
+  "errors": [],
+  "omegas": [
+    100,
+    500
+  ],
+  "records_by_set": {
+    "A": 60,
+    "B": 42,
+    "D": 36
+  },
+  "total_instances": 138,
+  "valid": true
+}

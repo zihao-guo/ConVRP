@@ -1,0 +1,4 @@
+source=/mnt/e/currentWORK/AAA_Project/P3/data/raw/goeke_2019_supplement_trsc.2018.0864.sm1.pdf
+file_type=.pdf
+
+binary_or_non_text_size=5547

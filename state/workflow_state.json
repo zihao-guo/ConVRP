@@ -1,0 +1,61 @@
+{
+    "state": "FULL_EXPERIMENT_RUNNING",
+  "valid_states": [
+    "INIT",
+    "ENV_CHECK",
+    "DATA_AUDIT",
+    "FORMAT_LOCKED",
+    "MODEL_CORE_READY",
+    "CALLBACK_TESTED",
+    "BC_READY",
+    "BD_READY",
+    "SAA_READY",
+    "SMOKE_READY",
+    "FULL_EXPERIMENT_SUBMITTED",
+    "FULL_EXPERIMENT_RUNNING",
+    "FULL_EXPERIMENT_DONE",
+    "TABLES_DONE",
+    "FINAL_REPORT_DONE",
+    "BLOCKED"
+  ],
+    "current_agent": "ExperimentAgent",
+    "last_transition": {
+        "from": "SMOKE_READY",
+        "to": "FULL_EXPERIMENT_RUNNING",
+        "by": "ExperimentAgent",
+        "timestamp": "2026-05-19T19:05:00+02:00",
+        "reason": "Submitted clean 552-job full experiment queue after PDF fixed-y subproblem correction, data audit, full tests, smoke checks, and dry-run job count verification"
+  },
+  "paths": {
+    "root": "/home/zeio99/Alv",
+    "paper_pdf": "/home/zeio99/Alv/paper/Alvarez et al. - 2024 - The consistent vehicle routing problem with stocha.pdf",
+    "data_dir": "/mnt/e/currentWORK/AAA_Project/P3/data",
+    "conda_env": "/home/zeio99/miniconda3/envs/p3-cvrpsd"
+  },
+  "solver": {
+    "paper": "CPLEX 22.1",
+    "reproduction": "Gurobi",
+    "threads_default": 1,
+    "mip_gap_default": 0.00001
+  },
+  "completed_states": [
+    "INIT",
+    "ENV_CHECK",
+    "DATA_AUDIT",
+    "FORMAT_LOCKED",
+    "MODEL_CORE_READY",
+    "CALLBACK_TESTED",
+    "BC_READY",
+    "BD_READY",
+    "SAA_READY",
+    "SMOKE_READY",
+    "FULL_EXPERIMENT_SUBMITTED",
+    "FULL_EXPERIMENT_RUNNING"
+  ],
+  "method_status": {
+        "BC": "paper_equivalent",
+    "BD": "paper_equivalent",
+    "SAA": "paper_equivalent"
+  },
+    "blocked_reason": null
+}

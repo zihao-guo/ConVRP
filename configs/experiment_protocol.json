@@ -1,0 +1,37 @@
+{
+  "source": "Alvarez, Cordeau, Jans paper PDF, Section 4.2 and Appendix B",
+  "solver": {
+    "paper": "CPLEX 22.1",
+    "reproduction": "Gurobi 13.0.1",
+    "threads": 1,
+    "mip_gap": 0.00001
+  },
+  "standalone_methods": {
+    "BC": {
+      "scenario_set": "full Omega",
+      "time_limit_seconds": 36000
+    },
+    "BD": {
+      "scenario_set": "full Omega",
+      "time_limit_seconds": 36000
+    }
+  },
+  "saa_methods": {
+    "SAA-BC": {
+      "M": 20,
+      "sample_size": 5,
+      "sample_problem_time_limit_seconds": 1800,
+      "evaluation_time_included_in_sample_limit": false
+    },
+    "SAA-BD": {
+      "M": 20,
+      "sample_size": 15,
+      "sample_problem_time_limit_seconds": 1800,
+      "evaluation_time_included_in_sample_limit": false
+    }
+  },
+  "notes": [
+    "The paper states that SAA sample problems use a 30 minute time limit, yielding a maximum of 10 hours for M=20 samples; the full-Omega evaluation time is additional and usually under 15 minutes.",
+    "The reproduction scripts use one asynchronous job per method-instance pair and do not run the full experiment synchronously inside the coding agent session."
+  ]
+}

@@ -1,0 +1,164 @@
+# Alvarez ConVRP Reproduction Progress
+
+## 2026-05-19
+
+- Initialized persistent planning files.
+- Confirmed paper PDF path.
+- Confirmed required conda environment path.
+- Confirmed primary data path.
+- Found `unzip` is unavailable; data ZIP handling will use Python `zipfile`.
+- Created `scripts/activate_env.sh`.
+- Ran DeploymentAgent environment check. `gurobipy` imports, but the tiny MIP fails because `/mnt/d/P3/gurobi.lic` cannot be opened.
+- Created blocker bug `BUG-ENV-GUROBI`.
+- Transitioned workflow state from `INIT` to `BLOCKED`.
+- User provided WLS license file path `/mnt/c/Users/User/Downloads/gurobi.lic`.
+- Updated `scripts/activate_env.sh` to export the new license path.
+- Added `scripts/check_environment.py`.
+- Re-ran the DeploymentAgent Gurobi check with network access. Tiny MIP solved optimally with objective `1.0`.
+- Marked `BUG-ENV-GUROBI` as fixed and transitioned workflow state from `BLOCKED` to `ENV_CHECK`.
+- Spawned PaperBaselineAgent to extract paper table baselines into `configs/paper_baselines.json`.
+- Transitioned workflow state from `ENV_CHECK` to `DATA_AUDIT`.
+- Generated data samples under `reports/data_samples/` and full file inventory.
+- Created `DATA_FORMAT.md` before implementing the parser.
+- Wrote data loader tests with `unittest`; initial RED failed because `alv` module did not exist.
+- Implemented `src/alv/data.py` and `scripts/audit_data.py`.
+- Fixed filename regex and manifest path normalization during validation.
+- Verified `PYTHONPATH=src python3 -m unittest tests.test_data_loader -v`: 2 tests passed.
+- Verified `PYTHONPATH=src python3 scripts/audit_data.py`: `{"valid": true, "total_instances": 138}`.
+- Created `results/processed/data_validation.json`, `results/tables/data_summary.csv`, and `reports/subagents/02_data_audit.md`.
+- PaperBaselineAgent completed `configs/paper_baselines.json` and `reports/subagents/03_paper_baselines.md`.
+- Transitioned workflow state from `DATA_AUDIT` to `FORMAT_LOCKED`.
+- Transitioned current agent to ModelSpecAgent.
+- Added `tests/test_model_core.py`; RED failed because `alv.model` did not exist.
+- Implemented `src/alv/model.py` with the core extensive-form variables, objective, and constraints.
+- Verified model-core tests with the required conda environment and WLS network access: 2 tests passed.
+- Created `reports/subagents/04_model_spec.md`.
+- Transitioned workflow state from `FORMAT_LOCKED` to `MODEL_CORE_READY`.
+- Spawned BranchCutAgent and BendersAgent in parallel after `MODEL_CORE_READY`.
+- BranchCutAgent implemented integer incumbent lazy SEC separation with Gurobi `MIPSOL` callback and documented that fractional min-cut separation is not implemented.
+- BendersAgent implemented a `BD-like` iterative master/subproblem loop, not exact branch-and-check.
+- Reviewed BendersAgent output and fixed two contract details: prompt-specified initial scenario lower-bound cuts and prompt-specified integer optimality cut formula.
+- Verified integrated suite with WLS network access: `tests.test_data_loader`, `tests.test_model_core`, `tests.test_branch_cut`, and `tests.test_benders` all passed, 9 tests total.
+- Marked completed states through `BC_READY` and `BD_READY`; current state is `BD_READY` with method status `BD-like` for BD.
+- Added SAAAgent tests; RED failed because `alv.saa` did not exist.
+- Implemented `src/alv/saa.py` with SAA-BC and SAA-BD protocol defaults, deterministic sample memberships, sample instance construction, full-Omega evaluation, and run loop.
+- Tightened Benders scenario evaluation to solve fixed-y single-scenario subproblems with lazy SEC separation.
+- Verified `tests.test_benders` and `tests.test_saa` with WLS network access: 7 tests passed.
+- Created `reports/subagents/07_saa.md`.
+- Transitioned workflow state from `BD_READY` to `SAA_READY`.
+- DebugAgent checked `state/bug_queue.jsonl`: 1 ticket total, 0 open/in-progress.
+- Re-ran data audit: valid with 138 instances.
+- Re-ran integrated smoke suite with WLS network access: 13 tests passed.
+- Created `reports/subagents/08_debug_smoke.md`.
+- Transitioned workflow state from `SAA_READY` to `SMOKE_READY`.
+- Implemented ExperimentAgent scripts: `submit_full.sh`, `submit_full.py`, `poll_runs.py`, `kill_run.py`, `resume_missing.py`, and `run_single.py`.
+- Verified submit dry-run with `--limit 2`; selected backend was `tmux`, jobs counted correctly.
+- Verified `poll_runs.py` summarizes the empty registry.
+- Did not submit the full experiment automatically; workflow remains `SMOKE_READY`.
+- Verified full dry-run job count: 552 total method-instance jobs.
+- Verified single-method dry-run job count: 138 jobs.
+- Ran temporary tiny CLI smoke for `run_single.py --method BC`; result objective `3.0`, best bound `3.0`, decomposition residual `0.0`.
+- Ran temporary tiny CLI smoke for `run_single.py --method BD`; result objective `3.0`, best bound `3.0`, `method_status=BD-like`.
+- Added `scripts/check_result_completeness.py` and `tests/test_result_completeness.py`.
+- Completeness gate reports current full experiment completeness as false: 0 raw results, 552 expected.
+- Created `reports/subagents/10_experiment_verification.md`.
+- Added `tests/test_final_report_guard.py` and `scripts/final_report_guard.py` to enforce the final-report full-reproduction claim conditions.
+- Verified current workspace cannot claim full reproduction: guard reports full experiment incomplete, BD not exact, BC SEC deviation not solver-only, and alignment tables missing.
+- Wrote `results/processed/result_completeness.json` with the current incomplete result status.
+- Appended a `*！！！*` warning section to `diff.txt`.
+- Created blocker tickets `BUG-METHOD-BD-EXACT`, `BUG-METHOD-BC-SEC`, and `BUG-FULL-EXPERIMENT-NOT-RUN`.
+- Transitioned workflow from `SMOKE_READY` to `BLOCKED` until final-report blockers are fixed and verified.
+- Fixed final-report guard condition display so `all_target_methods_run` is false unless result completeness is true and 552 method-instance results are present.
+- Performed a focused PDF alignment audit against Sections 3.1, 3.2.1, 3.2.2, 4.1, 4.2, Tables 1-3, Appendix A, and Appendix B.
+- Confirmed and documented that the model second-stage domain must be scenario-specific (`C_omega`, `E_omega`); updated code already reflects this.
+- Identified additional paper-alignment blockers: missing BC primal heuristic and missing SAA statistical gap/variance metrics.
+- Added `BUG-METHOD-BC-PRIMAL-HEURISTIC` and `BUG-SAA-STATS`.
+- Updated `state/workflow_state.json` with `method_status.SAA=missing_statistical_estimators`.
+- Extended `scripts/final_report_guard.py` so missing paper-equivalent SAA protocol blocks a full reproduction claim.
+- Added `reports/subagents/11_pdf_alignment_audit.md` and appended a new Chinese `*！！！*` PDF audit section to `diff.txt`.
+- Verified full unit suite after PDF-audit changes:
+  `source scripts/activate_env.sh && PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:. python -m unittest tests.test_data_loader tests.test_model_core tests.test_branch_cut tests.test_benders tests.test_saa tests.test_result_completeness tests.test_final_report_guard -v`
+  passed 19 tests.
+- Verified `scripts/final_report_guard.py` still exits nonzero and reports `can_claim_full_reproduction=false`, now including `saa_statistics_protocol_incomplete`.
+- Added paper-formula SAA statistics in `src/alv/saa.py`: statistical lower bound, lower-bound variance, incumbent variance, SAA gap, SAA gap variance, `Opt gap (%)`, and average `Sample gap (%)`.
+- Updated `scripts/run_single.py` so SAA raw result JSON includes `saa_statistics`, sample objectives, and sample lower bounds for TableAlignmentAgent.
+- Updated `state/workflow_state.json` from `method_status.SAA=missing_statistical_estimators` to `statistics_implemented_not_table_aligned`; the final-report guard still blocks until SAA is table-aligned and paper-equivalent.
+- Re-verified full unit suite after SAA serialization changes: 20 tests passed.
+- Re-verified `state/workflow_state.json` is valid JSON and `state/bug_queue.jsonl` is valid JSONL.
+- Added TDD coverage for BC root-node fractional min-cut SEC separation.
+- Implemented root-node `MIPNODE` SEC user cuts in `src/alv/branch_cut.py` with `cbGetNodeRel`, `cbCut`, `PreCrush=1`, and an internal Edmonds-Karp max-flow/min-cut routine.
+- Updated `BUG-METHOD-BC-SEC` and workflow method status to reflect partial SEC improvement while keeping BC blocked because primal heuristic and full paper-equivalence remain unresolved.
+- Added `scripts/generate_alignment_tables.py` and `tests/test_table_alignment.py`.
+- Generated readable paper reference CSVs, `results/tables/PAPER_TABLES.md`, and `*_alignment.csv` files under `results/tables/`; current reproduction statuses are `not_run` because full raw experiment outputs are missing.
+- Added `configs/experiment_protocol.json`.
+- Added `tests/test_experiment_protocol.py` and exposed `time_limit_for_method` in `scripts/submit_full.py` to lock paper time limits: 10 hours for standalone BC/BD and 30 minutes per SAA sample problem.
+- Updated `scripts/run_single.py` raw result metadata to include time limit, `Threads=1`, `MIPGap=1e-5`, and SAA sample protocol fields.
+- Re-verified full suite after all changes: 23 tests passed.
+- Re-ran `scripts/final_report_guard.py`: `can_claim_full_reproduction=false`; required tables are now generated, but statuses are `not_run`, full experiment results are incomplete, and BC/BD/SAA are not yet marked paper-equivalent.
+- Confirmed `results/tables/PAPER_TABLES.md` was generated for readable PDF baseline review.
+- Ran experiment monitor checks: initial registry had 0 runs and completeness was 0/552.
+- Added `scripts/submit_full_queue.py` and `tests/test_full_experiment_queue.py`.
+- Updated `scripts/poll_runs.py` to summarize latest registry state per `run_id` so queue updates do not double count.
+- Submitted the full 552-job experiment queue after the user explicitly required a full experiment. This is not a subset run.
+- Queue settings: all 138 instances, all four methods, concurrency 2, manager `tmux:alv_full_experiment_manager`.
+- Updated workflow state to `FULL_EXPERIMENT_RUNNING`; final full-reproduction claim remains blocked by method-deviation tickets and final-report guard.
+- Started background monitor `tmux:alv_full_experiment_monitor`; it writes progress every 300 seconds to `results/metadata/full_experiment_monitor.jsonl` and `results/logs/full_experiment_monitor.log` until the full 552-job queue has no pending/running jobs.
+- Latest observed queue status: total 552, done 9, running 2, pending 541, failed 0.
+- Stopped and archived the earlier full queues because they were started before all blocker fixes and before the final raw schema contained Table 3 attributes.
+- Implemented exact BD branch-and-check with Gurobi master incumbent callback and verified focused tests.
+- Implemented BC paper-equivalent SEC separation plus Base BC primal heuristic, then bounded/quieted heuristic subproblem solves and deduplicated repeated first-stage `y` evaluations.
+- Added best-solution timing fields for BC, BD, and SAA.
+- Extended SAA full-Omega evaluation/raw JSON with travel, consistency, skipping, skipped-customer, cluster, and violation metrics needed for Table 3.
+- Reworked `scripts/generate_alignment_tables.py` to read paper-equivalent raw results and compute our values instead of only writing `not_run` placeholders.
+- Verified data audit: `{"valid": true, "total_instances": 138}`.
+- Verified BC/BD/SAA smoke on a tiny in-memory instance: BC optimal, BD optimal with `method=BD`, SAA-BC and SAA-BD both evaluated 2 replications.
+- Verified full unit suite after fixes: 30 tests passed.
+- Rechecked dry-run job count: 552 jobs.
+- Restarted corrected full experiment queue with 552 jobs, concurrency 2, manager `tmux:alv_full_experiment_manager`, monitor `tmux:alv_full_experiment_monitor`.
+- Latest corrected queue status observed after restart: total 552, done 1, running 1, pending 550, failed 0.
+- Paused and archived that queue after finding BD callback subproblem solves did not inherit the master remaining time limit.
+- Added BD scenario-subproblem `time_limit` support and callback remaining-time propagation; verified focused Benders/SAA tests and then the full 31-test suite.
+- Re-ran BC/BD/SAA smoke after the time-limit fix: BC status 2, BD status 2, SAA-BC evaluated 2 replications, SAA-BD evaluated 2 replications.
+- Rechecked dry-run job count after the time-limit fix: 552 jobs.
+- Restarted the final corrected full experiment queue again with 552 jobs, concurrency 2, manager `tmux:alv_full_experiment_manager`, monitor `tmux:alv_full_experiment_monitor`.
+- Paused the queue again after a deeper PDF check found that fixed-y scenario subproblems inherited the full-model reference-scenario vehicle-order SBC, which is not in PDF formulas (21)-(30).
+- Added RED test `test_scenario_subproblem_does_not_apply_full_model_vehicle_order_sbc`; before the fix it returned objective `6.0` instead of the paper subproblem objective `2.0`.
+- Implemented `src/alv/subproblem.py` as a shared PDF (21)-(30) fixed-y scenario subproblem with only `z/x`, visit-once, degree, depot-degree, fixed-y linking, capacity, travel+skipping objective, and dynamic SECs.
+- Updated BD scenario evaluation, SAA full-Omega evaluation path, and BC primal heuristic to use the shared fixed-y subproblem instead of a one-scenario full extensive form.
+- Verified focused BD/BC/SAA tests: 18 tests passed.
+- Verified the full unit suite: 34 tests passed.
+- Re-ran data audit after the fixed-y subproblem correction: `{"valid": true, "total_instances": 138}`.
+- Rechecked full queue dry-run after the correction: `planned=552`, `expected_total_jobs=552`.
+- Re-ran small BC/BD/SAA smoke after the correction: BC optimal objective `2.25`, BD optimal objective `2.25`, SAA-BC and SAA-BD each completed 2 replications.
+- Archived pre-subproblem-fix raw results, registry, and lock to `results/archive_pdf_exact_subproblem_fix/20260519_190000/`.
+- Updated workflow state back to `SMOKE_READY`; final 552-job experiment must be restarted from clean raw results.
+- Restarted the clean full experiment queue after the fixed-y subproblem correction: 552 jobs created, concurrency 2, manager `tmux:alv_full_experiment_manager`.
+- Started monitor `tmux:alv_full_experiment_monitor` writing to `results/logs/full_experiment_monitor.log`.
+- First poll after restart: total 552, done 2, running 2, pending 548, failed 0.
+- Found queue persistence bug: long BD/SAA-BD child processes launched via Python `subprocess.Popen` under the manager could disappear without raw files, leaving stale running registry rows. Direct tmux job sessions stayed alive.
+- Added queue tests for stale dead-pid and missing-tmux-session recovery.
+- Updated `scripts/submit_full_queue.py` so each running job is launched in its own tmux session when tmux is available; manager now supervises sessions instead of owning long Gurobi children directly.
+- Updated `scripts/poll_runs.py` and queue status inference so dead pid or missing tmux session with missing raw becomes `pending`, not stale `running`.
+- Restarted the clean full experiment queue with concurrency 1 using independent tmux job sessions. After 60 seconds: total 552, done 2, running 1, pending 549, failed 0.
+- Re-ran the full unit suite after the queue persistence fix: 36 tests passed.
+- Post-test queue poll remains healthy: total 552, done 2, running 1, pending 549, failed 0.
+- Current completeness check is still false, as expected: 2 raw results exist, 552 required.
+- Current final guard still returns `can_claim_full_reproduction=false` because full results are incomplete and alignment rows remain `not_run`.
+- Added persistence of `scripts/check_result_completeness.py` output to `results/processed/result_completeness.json`, because `scripts/final_report_guard.py` reads that file.
+- Added regression test `test_write_completeness_report_refreshes_guard_input_file`.
+- Re-ran the full unit suite after the completeness persistence change: 37 tests passed.
+- Refreshed `results/processed/result_completeness.json`; it currently records `complete=false`, `total_raw_results=2`.
+- Re-ran final guard: `can_claim_full_reproduction=false`, blocked by incomplete full experiment and `not_run` alignment rows.
+- Monitored full experiment again after 60 seconds with non-sandbox tmux access: total 552, done 2, running 1, pending 549, failed 0; current BD job session remains alive.
+- 2026-05-19T19:40:01+02:00 full-experiment monitor check: queue remains full-size with total 552 jobs, done 2, running 1, pending 549, failed 0, timeout 0. Active job is `bd__convrp_10_test_1__omega100__alpha20__97224f134200`, running in tmux as `alv_job_bd__convrp_10_test_1__omega100__alpha20__97224f134200_d0eb6226`; host process table shows it is alive and using approximately one CPU core. Completeness remains false, so no full-reproduction claim is allowed.
+- Updated stale PDF-alignment reports so they no longer describe pre-fix BC/BD/SAA deviations as current status. Added a Chinese `diff.txt` note confirming that current model/subproblem/BC/BD/SAA code is intended to match the PDF formulation and protocol exactly, with no extra constraint family or invented method; the remaining blocker is still the incomplete 552-job full experiment and final table generation.
+- 2026-05-19T19:43:09+02:00 monitoring checkpoint: full queue still has total 552 jobs with done 2, running 1, pending 549, failed 0, timeout 0. `alv_full_experiment_manager`, `alv_full_experiment_monitor`, and current BD job tmux session are alive. Host process `python scripts/run_single.py --run-id bd__convrp_10_test_1__omega100__alpha20__97224f134200` has been running about 16 minutes at approximately 100% CPU, consistent with an active single-thread Gurobi solve. Continue monitoring; do not generate final tables or final report yet.
+- Found and fixed `BUG-ALIGN-PARTIAL-AGGREGATION`: alignment tables were consuming the current 2/552 partial raw results and displaying subset aggregates in full-paper table rows. Added a regression test, verified RED failure, then gated raw aggregation on full completeness: 138 instances and all four methods per instance. Re-ran `tests.test_table_alignment` successfully and regenerated all alignment/reference tables. Current alignment rows now remain `not_run` until the full 552-job experiment completes.
+- Refreshed `scripts/check_result_completeness.py`: `complete=false`, `total_raw_results=2`. Re-ran `scripts/final_report_guard.py`: exit code 2, `can_claim_full_reproduction=false`, blocked by incomplete full experiment and `not_run` alignment rows.
+- 2026-05-19T19:47:53+02:00 re-verified the user's four final-report conditions. `scripts/check_result_completeness.py` still reports `complete=false` and `total_raw_results=2/552`; `scripts/final_report_guard.py` still exits 2 with `can_claim_full_reproduction=false`; full queue poll remains `done=2`, `running=1`, `pending=549`, `failed=0`. Added another `*！！！*` section to `diff.txt` recording why the final report must not claim complete reproduction yet.
+- 2026-05-19T19:49:02+02:00 monitoring checkpoint: full queue remains total 552 with done 2, running 1, pending 549, failed 0, timeout 0. `alv_full_experiment_manager`, `alv_full_experiment_monitor`, and current BD job session are alive. Current BD process has been running about 22 minutes at approximately 100% CPU and about 12% memory. No missing raw files or failed jobs observed.
+- 2026-05-19T19:50:33+02:00 PDF model/time protocol spot-check: `configs/experiment_protocol.json` and `scripts/submit_full.py` still encode BC/BD 10h, SAA sample 30min, Threads=1, MIPGap=1e-5, and SAA full-Omega evaluation outside the sample limit. Focused model/SEC/subproblem verification passed: `tests.test_model_core`, `test_scenario_subproblem_does_not_apply_full_model_vehicle_order_sbc`, integer SEC callback test, and fractional root min-cut SEC test all OK. Queue remains total 552, done 2, running 1, pending 549, failed 0.
+- Re-read the PDF text around formulation pages 7-8, BC enhancements pages 11-12, BD formulas pages 12-13, and time protocol page 15. Confirmed the current full model follows formulas (1)-(15), BC uses SEC separation plus VI/SBC/primal heuristic, BD uses branch-and-check and fixed-y subproblems (21)-(30), and SAA timing matches Section 4.2. Added an explicit report/diff note on the BD SBC wording ambiguity: VI (18) and `s_k <= s_{k-1}` are in the BD master, while the `x`-based SBC (16) is not added to fixed-y subproblems because it is not in formulas (21)-(30) and would change `theta_omega(y*)`.
+- 2026-05-20T10:07:19+02:00 status check: full queue still total 552, done 2, running 1, pending 549, failed 0. Active job remains `bd__convrp_10_test_1__omega100__alpha20__97224f134200`; it has been running about 2h03m at ~100% CPU and ~71% memory. This is still within the paper 10h standalone BD time limit and is not counted as complete until its raw JSON is written.
+- 2026-05-20T10:11:26+02:00 ETA/status detail: the full queue was submitted at 2026-05-19T19:04:23+02:00 and the tmux queue manager has been active since 2026-05-19T19:27:10+02:00. The current BD attempt started at 2026-05-20T08:04:18+02:00. Registry shows the same BD run previously exited with code 1 after attempts 19:27-22:39, 22:39-01:51, 01:51-04:57, and 04:57-08:04, without a raw result. No traceback or GurobiError appears in the BD log. Added `BUG-BD-REPEATED-EXIT-001`; this is a blocker risk for full completion and means ETA is not reliable until diagnosed.
+- 2026-05-20 OOM root-cause evidence: `dmesg -T` shows each previous BD exit coincided with the WSL2 kernel OOM killer terminating a Python process at about 15.1-15.2GB RSS: 22:39:41 pid 31533, 01:50:50 pid 12185, 04:57:02 pid 15907, 08:04:12 pid 18590. Updated `BUG-BD-REPEATED-EXIT-001` with this evidence. This is now a confirmed memory-exhaustion blocker for exact BD, not merely slow solving.

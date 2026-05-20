@@ -1,0 +1,8 @@
+table_name,row_key,method,metric,paper_value,our_value,diff_abs,diff_pct,status,notes
+appendix_b11_saa_bc,sample_time=30;M=20;N=5,SAA-BC,number_of_instances,138,,,,not_run,full experiment raw result not available yet
+appendix_b11_saa_bc,sample_time=30;M=20;N=5,SAA-BC,total_cost,253.01,,,,not_run,full experiment raw result not available yet
+appendix_b11_saa_bc,sample_time=30;M=20;N=5,SAA-BC,total_time_seconds,15263,,,,not_run,full experiment raw result not available yet
+appendix_b11_saa_bc,sample_time=30;M=20;N=5,SAA-BC,time_to_best_seconds,7145,,,,not_run,full experiment raw result not available yet
+appendix_b11_saa_bc,sample_time=30;M=20;N=5,SAA-BC,opt_gap_percent,16.0,,,,not_run,full experiment raw result not available yet
+appendix_b11_saa_bc,sample_time=30;M=20;N=5,SAA-BC,sample_gap_percent,10.83,,,,not_run,full experiment raw result not available yet
+appendix_b11_saa_bc,sample_time=30;M=20;N=5,SAA-BC,selected_for_main_experiments,True,,,,not_run,full experiment raw result not available yet

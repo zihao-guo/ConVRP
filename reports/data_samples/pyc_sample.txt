@@ -1,0 +1,4 @@
+source=/mnt/e/currentWORK/AAA_Project/P3/data/processed/scripts/__pycache__/process_alvarez_abd.cpython-313.pyc
+file_type=.pyc
+
+binary_or_non_text_size=22056

@@ -1,0 +1,27 @@
+# Python caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Local environments and editor state
+.venv/
+venv/
+.idea/
+.vscode/
+
+# Runtime logs and solver outputs
+results/logs/
+results/raw/
+results/archive*/
+results/metadata/
+
+# Local workflow runtime state
+state/run_registry.jsonl
+state/locks/
+
+# Large/local paper artifact; keep path documented in workflow state
+paper/*.pdf
+
+# OS files
+.DS_Store
+Thumbs.db

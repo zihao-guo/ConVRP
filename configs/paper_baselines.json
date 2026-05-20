@@ -1,0 +1,642 @@
+{
+  "metadata": {
+    "paper": {
+      "title": "The consistent vehicle routing problem with stochastic demands",
+      "authors": "Alvarez et al.",
+      "year": 2024,
+      "source_pdf": "paper/Alvarez et al. - 2024 - The consistent vehicle routing problem with stocha.pdf"
+    },
+    "extraction": {
+      "agent": "PaperBaselineAgent",
+      "date": "2026-05-19",
+      "method": "Text-layer extraction from the local PDF using pypdf; table values were manually transcribed from the extracted text.",
+      "temporary_text_file": "/tmp/alvarez_paper_pypdf.txt",
+      "ocr_used": false,
+      "uncertainty_notes": [
+        "The PDF text layer preserved the table rows for the requested tables.",
+        "Values marked with an asterisk in the paper are represented with selected_for_main_experiments=true and stored without the asterisk in numeric fields."
+      ]
+    },
+    "units": {
+      "probability_of_occurrence": "percent",
+      "cost": "paper objective units",
+      "gap": "percent",
+      "time": "seconds",
+      "sample_time": "minutes",
+      "scenario_set_size": "number of scenarios"
+    },
+    "missing_values_policy": "Missing or unreadable values are represented as null with notes; no missing table entries were identified for the requested tables."
+  },
+  "table_1_method_comparison": {
+    "title": "Performance comparison of the methods",
+    "probability_columns_percent": [
+      20,
+      50,
+      80
+    ],
+    "number_of_instances": {
+      "20": 46,
+      "50": 46,
+      "80": 46,
+      "total": 138
+    },
+    "statistics": {
+      "number_of_optimal": {
+        "note": "For BC and BD this status is proven during execution; for SAA methods it is evaluated with respect to the best lower bound of BC and BD.",
+        "BC": {
+          "20": 31,
+          "50": 16,
+          "80": 0,
+          "total": 47
+        },
+        "BD": {
+          "20": 30,
+          "50": 16,
+          "80": 0,
+          "total": 46
+        },
+        "SAA-BC": {
+          "20": 30,
+          "50": 11,
+          "80": 0,
+          "total": 41
+        },
+        "SAA-BD": {
+          "20": 30,
+          "50": 14,
+          "80": 0,
+          "total": 44
+        }
+      },
+      "total_cost": {
+        "BC": {
+          "20": 184.56,
+          "50": 1310.1,
+          "80": 2833.0,
+          "total": 1442.55
+        },
+        "BD": {
+          "20": 171.32,
+          "50": 395.91,
+          "80": 588.29,
+          "total": 385.17
+        },
+        "SAA-BC": {
+          "20": 154.88,
+          "50": 257.83,
+          "80": 346.32,
+          "total": 253.01
+        },
+        "SAA-BD": {
+          "20": 164.08,
+          "50": 354.17,
+          "80": 501.29,
+          "total": 339.84
+        }
+      },
+      "gap_to_best_percent": {
+        "BC": {
+          "20": 8.5,
+          "50": 160.44,
+          "80": 300.63,
+          "total": 156.52
+        },
+        "BD": {
+          "20": 6.43,
+          "50": 24.78,
+          "80": 36.23,
+          "total": 22.48
+        },
+        "SAA-BC": {
+          "20": 2.24,
+          "50": 0.21,
+          "80": 0.11,
+          "total": 0.85
+        },
+        "SAA-BD": {
+          "20": 4.74,
+          "50": 16.14,
+          "80": 21.19,
+          "total": 14.02
+        }
+      },
+      "total_time_seconds": {
+        "BC": {
+          "20": 12037,
+          "50": 23952,
+          "80": 35838,
+          "total": 23942.39
+        },
+        "BD": {
+          "20": 31352,
+          "50": 32130,
+          "80": 32823,
+          "total": 32101.51
+        },
+        "SAA-BC": {
+          "20": 7905,
+          "50": 14385,
+          "80": 23499,
+          "total": 15262.93
+        },
+        "SAA-BD": {
+          "20": 33502,
+          "50": 36072,
+          "80": 36090,
+          "total": 35221.36
+        }
+      },
+      "time_to_best_seconds": {
+        "BC": {
+          "20": 4098,
+          "50": 6550,
+          "80": 7406,
+          "total": 6017.92
+        },
+        "BD": {
+          "20": 3145,
+          "50": 5224,
+          "80": 6940,
+          "total": 5103.41
+        },
+        "SAA-BC": {
+          "20": 5049,
+          "50": 7383,
+          "80": 9003,
+          "total": 7145.02
+        },
+        "SAA-BD": {
+          "20": 6731,
+          "50": 7923,
+          "80": 9500,
+          "total": 8051.56
+        }
+      }
+    }
+  },
+  "table_2_gap_by_omega_and_set": {
+    "title": "Gap to best solution (%) for the different instance classes and number of scenarios",
+    "rows": [
+      {
+        "scenario_set_size": 100,
+        "set": "A",
+        "number_of_instances": 30,
+        "gap_to_best_percent": {
+          "BC": 0.26,
+          "BD": 0.75,
+          "SAA-BC": 0.2,
+          "SAA-BD": 0.02
+        }
+      },
+      {
+        "scenario_set_size": 100,
+        "set": "B",
+        "number_of_instances": 21,
+        "gap_to_best_percent": {
+          "BC": 393.69,
+          "BD": 58.15,
+          "SAA-BC": 4.23,
+          "SAA-BD": 42.25
+        }
+      },
+      {
+        "scenario_set_size": 100,
+        "set": "D",
+        "number_of_instances": 18,
+        "gap_to_best_percent": {
+          "BC": 0.83,
+          "BD": 12.31,
+          "SAA-BC": 0.29,
+          "SAA-BD": 7.09
+        }
+      },
+      {
+        "scenario_set_size": 500,
+        "set": "A",
+        "number_of_instances": 30,
+        "gap_to_best_percent": {
+          "BC": 0.74,
+          "BD": 2.47,
+          "SAA-BC": 0.16,
+          "SAA-BD": 0.09
+        }
+      },
+      {
+        "scenario_set_size": 500,
+        "set": "B",
+        "number_of_instances": 21,
+        "gap_to_best_percent": {
+          "BC": 582.16,
+          "BD": 58.26,
+          "SAA-BC": 0.37,
+          "SAA-BD": 37.25
+        }
+      },
+      {
+        "scenario_set_size": 500,
+        "set": "D",
+        "number_of_instances": 18,
+        "gap_to_best_percent": {
+          "BC": 59.02,
+          "BD": 18.86,
+          "SAA-BC": 0.27,
+          "SAA-BD": 7.48
+        }
+      }
+    ],
+    "total": {
+      "number_of_instances": 138,
+      "gap_to_best_percent": {
+        "BC": 156.52,
+        "BD": 22.48,
+        "SAA-BC": 0.85,
+        "SAA-BD": 14.02
+      }
+    }
+  },
+  "table_3_saa_bc_solution_attributes": {
+    "title": "Summary of the attributes of the solutions of SAA-BC",
+    "rows": [
+      {
+        "scenario_set_size": 100,
+        "probability_of_occurrence_percent": 20,
+        "number_of_instances": 23,
+        "total_cost": 152.99,
+        "travel_cost_percent": 96.55,
+        "consistency_penalty_percent": 0.07,
+        "skipping_cost_percent": 3.38,
+        "number_of_clusters": 1.7,
+        "violation_level": 0.19,
+        "skipped_customers_percent": 0.98
+      },
+      {
+        "scenario_set_size": 100,
+        "probability_of_occurrence_percent": 50,
+        "number_of_instances": 23,
+        "total_cost": 257.7,
+        "travel_cost_percent": 92.08,
+        "consistency_penalty_percent": 1.93,
+        "skipping_cost_percent": 5.99,
+        "number_of_clusters": 3.04,
+        "violation_level": 5.82,
+        "skipped_customers_percent": 1.33
+      },
+      {
+        "scenario_set_size": 100,
+        "probability_of_occurrence_percent": 80,
+        "number_of_instances": 23,
+        "total_cost": 341.33,
+        "travel_cost_percent": 93.08,
+        "consistency_penalty_percent": 4.15,
+        "skipping_cost_percent": 2.77,
+        "number_of_clusters": 4.04,
+        "violation_level": 16.7,
+        "skipped_customers_percent": 0.44
+      },
+      {
+        "scenario_set_size": 500,
+        "probability_of_occurrence_percent": 20,
+        "number_of_instances": 23,
+        "total_cost": 156.77,
+        "travel_cost_percent": 95.95,
+        "consistency_penalty_percent": 0.24,
+        "skipping_cost_percent": 3.81,
+        "number_of_clusters": 1.74,
+        "violation_level": 0.36,
+        "skipped_customers_percent": 1.14
+      },
+      {
+        "scenario_set_size": 500,
+        "probability_of_occurrence_percent": 50,
+        "number_of_instances": 23,
+        "total_cost": 257.97,
+        "travel_cost_percent": 91.86,
+        "consistency_penalty_percent": 1.93,
+        "skipping_cost_percent": 6.21,
+        "number_of_clusters": 3.26,
+        "violation_level": 6.87,
+        "skipped_customers_percent": 1.27
+      },
+      {
+        "scenario_set_size": 500,
+        "probability_of_occurrence_percent": 80,
+        "number_of_instances": 23,
+        "total_cost": 351.31,
+        "travel_cost_percent": 92.32,
+        "consistency_penalty_percent": 3.28,
+        "skipping_cost_percent": 4.41,
+        "number_of_clusters": 4.3,
+        "violation_level": 14.27,
+        "skipped_customers_percent": 0.72
+      }
+    ],
+    "total": {
+      "number_of_instances": 138,
+      "total_cost": 253.01,
+      "travel_cost_percent": 93.64,
+      "consistency_penalty_percent": 1.93,
+      "skipping_cost_percent": 4.43,
+      "number_of_clusters": 3.01,
+      "violation_level": 7.37,
+      "skipped_customers_percent": 0.98
+    }
+  },
+  "appendix_b11_saa_bc": {
+    "title": "Performance of the SAA-BC method for different configurations",
+    "rows": [
+      {
+        "sample_time_minutes": 30,
+        "M": 10,
+        "sample_size": 5,
+        "number_of_instances": 138,
+        "total_cost": 255.83,
+        "total_time_seconds": 7479,
+        "time_to_best_seconds": 3736,
+        "opt_gap_percent": 16.0,
+        "sample_gap_percent": 10.62,
+        "selected_for_main_experiments": false
+      },
+      {
+        "sample_time_minutes": 30,
+        "M": 10,
+        "sample_size": 10,
+        "number_of_instances": 138,
+        "total_cost": 563.94,
+        "total_time_seconds": 9342,
+        "time_to_best_seconds": 4917,
+        "opt_gap_percent": 19.09,
+        "sample_gap_percent": 16.53,
+        "selected_for_main_experiments": false
+      },
+      {
+        "sample_time_minutes": 30,
+        "M": 10,
+        "sample_size": 15,
+        "number_of_instances": 138,
+        "total_cost": 568.77,
+        "total_time_seconds": 10313,
+        "time_to_best_seconds": 4984,
+        "opt_gap_percent": 19.73,
+        "sample_gap_percent": 18.25,
+        "selected_for_main_experiments": false
+      },
+      {
+        "sample_time_minutes": 30,
+        "M": 10,
+        "sample_size": 20,
+        "number_of_instances": 138,
+        "total_cost": 714.87,
+        "total_time_seconds": 10871,
+        "time_to_best_seconds": 4695,
+        "opt_gap_percent": 21.6,
+        "sample_gap_percent": 20.71,
+        "selected_for_main_experiments": false
+      },
+      {
+        "sample_time_minutes": 30,
+        "M": 20,
+        "sample_size": 5,
+        "number_of_instances": 138,
+        "total_cost": 253.01,
+        "total_time_seconds": 15263,
+        "time_to_best_seconds": 7145,
+        "opt_gap_percent": 16.0,
+        "sample_gap_percent": 10.83,
+        "selected_for_main_experiments": true
+      },
+      {
+        "sample_time_minutes": 30,
+        "M": 20,
+        "sample_size": 10,
+        "number_of_instances": 138,
+        "total_cost": 564.68,
+        "total_time_seconds": 18845,
+        "time_to_best_seconds": 8354,
+        "opt_gap_percent": 19.14,
+        "sample_gap_percent": 16.43,
+        "selected_for_main_experiments": false
+      },
+      {
+        "sample_time_minutes": 30,
+        "M": 20,
+        "sample_size": 15,
+        "number_of_instances": 138,
+        "total_cost": 566.29,
+        "total_time_seconds": 20903,
+        "time_to_best_seconds": 9654,
+        "opt_gap_percent": 19.51,
+        "sample_gap_percent": 18.32,
+        "selected_for_main_experiments": false
+      },
+      {
+        "sample_time_minutes": 30,
+        "M": 20,
+        "sample_size": 20,
+        "number_of_instances": 138,
+        "total_cost": 712.35,
+        "total_time_seconds": 21798,
+        "time_to_best_seconds": 9620,
+        "opt_gap_percent": 21.14,
+        "sample_gap_percent": 20.57,
+        "selected_for_main_experiments": false
+      },
+      {
+        "sample_time_minutes": 60,
+        "M": 10,
+        "sample_size": 5,
+        "number_of_instances": 138,
+        "total_cost": 253.47,
+        "total_time_seconds": 14269,
+        "time_to_best_seconds": 7466,
+        "opt_gap_percent": 15.6,
+        "sample_gap_percent": 9.97,
+        "selected_for_main_experiments": false
+      },
+      {
+        "sample_time_minutes": 60,
+        "M": 10,
+        "sample_size": 10,
+        "number_of_instances": 138,
+        "total_cost": 266.4,
+        "total_time_seconds": 18164,
+        "time_to_best_seconds": 10740,
+        "opt_gap_percent": 16.76,
+        "sample_gap_percent": 14.03,
+        "selected_for_main_experiments": false
+      },
+      {
+        "sample_time_minutes": 60,
+        "M": 10,
+        "sample_size": 15,
+        "number_of_instances": 138,
+        "total_cost": 563.93,
+        "total_time_seconds": 20050,
+        "time_to_best_seconds": 10476,
+        "opt_gap_percent": 18.92,
+        "sample_gap_percent": 17.34,
+        "selected_for_main_experiments": false
+      },
+      {
+        "sample_time_minutes": 60,
+        "M": 10,
+        "sample_size": 20,
+        "number_of_instances": 138,
+        "total_cost": 579.57,
+        "total_time_seconds": 21213,
+        "time_to_best_seconds": 8215,
+        "opt_gap_percent": 19.75,
+        "sample_gap_percent": 18.63,
+        "selected_for_main_experiments": false
+      }
+    ]
+  },
+  "appendix_b12_saa_bd": {
+    "title": "Performance of the SAA-BD method for different configurations",
+    "rows": [
+      {
+        "sample_time_minutes": 30,
+        "M": 10,
+        "sample_size": 5,
+        "number_of_instances": 138,
+        "total_cost": 344.69,
+        "total_time_seconds": 17384,
+        "time_to_best_seconds": 5831,
+        "opt_gap_percent": 42.41,
+        "sample_gap_percent": 40.64,
+        "selected_for_main_experiments": false
+      },
+      {
+        "sample_time_minutes": 30,
+        "M": 10,
+        "sample_size": 10,
+        "number_of_instances": 138,
+        "total_cost": 342.37,
+        "total_time_seconds": 17539,
+        "time_to_best_seconds": 5302,
+        "opt_gap_percent": 42.69,
+        "sample_gap_percent": 41.85,
+        "selected_for_main_experiments": false
+      },
+      {
+        "sample_time_minutes": 30,
+        "M": 10,
+        "sample_size": 15,
+        "number_of_instances": 138,
+        "total_cost": 341.21,
+        "total_time_seconds": 17612,
+        "time_to_best_seconds": 4902,
+        "opt_gap_percent": 43.18,
+        "sample_gap_percent": 42.63,
+        "selected_for_main_experiments": false
+      },
+      {
+        "sample_time_minutes": 30,
+        "M": 10,
+        "sample_size": 20,
+        "number_of_instances": 138,
+        "total_cost": 342.48,
+        "total_time_seconds": 17831,
+        "time_to_best_seconds": 5032,
+        "opt_gap_percent": 43.84,
+        "sample_gap_percent": 43.42,
+        "selected_for_main_experiments": false
+      },
+      {
+        "sample_time_minutes": 30,
+        "M": 20,
+        "sample_size": 5,
+        "number_of_instances": 138,
+        "total_cost": 341.99,
+        "total_time_seconds": 34479,
+        "time_to_best_seconds": 10431,
+        "opt_gap_percent": 43.61,
+        "sample_gap_percent": 42.0,
+        "selected_for_main_experiments": false
+      },
+      {
+        "sample_time_minutes": 30,
+        "M": 20,
+        "sample_size": 10,
+        "number_of_instances": 138,
+        "total_cost": 340.1,
+        "total_time_seconds": 34866,
+        "time_to_best_seconds": 9915,
+        "opt_gap_percent": 44.58,
+        "sample_gap_percent": 43.8,
+        "selected_for_main_experiments": false
+      },
+      {
+        "sample_time_minutes": 30,
+        "M": 20,
+        "sample_size": 15,
+        "number_of_instances": 138,
+        "total_cost": 339.84,
+        "total_time_seconds": 35221,
+        "time_to_best_seconds": 8052,
+        "opt_gap_percent": 45.53,
+        "sample_gap_percent": 45.12,
+        "selected_for_main_experiments": true
+      },
+      {
+        "sample_time_minutes": 30,
+        "M": 20,
+        "sample_size": 20,
+        "number_of_instances": 138,
+        "total_cost": 342.31,
+        "total_time_seconds": 35670,
+        "time_to_best_seconds": 8039,
+        "opt_gap_percent": 46.7,
+        "sample_gap_percent": 46.48,
+        "selected_for_main_experiments": false
+      },
+      {
+        "sample_time_minutes": 60,
+        "M": 10,
+        "sample_size": 5,
+        "number_of_instances": 138,
+        "total_cost": 343.53,
+        "total_time_seconds": 34208,
+        "time_to_best_seconds": 11974,
+        "opt_gap_percent": 41.79,
+        "sample_gap_percent": 40.11,
+        "selected_for_main_experiments": false
+      },
+      {
+        "sample_time_minutes": 60,
+        "M": 10,
+        "sample_size": 10,
+        "number_of_instances": 138,
+        "total_cost": 341.74,
+        "total_time_seconds": 34571,
+        "time_to_best_seconds": 11285,
+        "opt_gap_percent": 42.22,
+        "sample_gap_percent": 41.42,
+        "selected_for_main_experiments": false
+      },
+      {
+        "sample_time_minutes": 60,
+        "M": 10,
+        "sample_size": 15,
+        "number_of_instances": 138,
+        "total_cost": 340.76,
+        "total_time_seconds": 34805,
+        "time_to_best_seconds": 9999,
+        "opt_gap_percent": 42.78,
+        "sample_gap_percent": 42.25,
+        "selected_for_main_experiments": false
+      },
+      {
+        "sample_time_minutes": 60,
+        "M": 10,
+        "sample_size": 20,
+        "number_of_instances": 138,
+        "total_cost": 341.31,
+        "total_time_seconds": 35349,
+        "time_to_best_seconds": 10092,
+        "opt_gap_percent": 43.46,
+        "sample_gap_percent": 43.0,
+        "selected_for_main_experiments": false
+      }
+    ]
+  }
+}

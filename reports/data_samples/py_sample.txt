@@ -1,0 +1,53 @@
+source=/mnt/e/currentWORK/AAA_Project/P3/data/processed/scripts/reproduce_abd_data.py
+file_type=.py
+
+from __future__ import annotations
+import argparse
+import hashlib
+import json
+import math
+import random
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Iterable
+@dataclass(frozen=True)
+class DeterministicInstance:
+    set_name: str
+    name: str
+    capacity: int
+    depot: int
+    customers: list[int]
+    demands: dict[int, int]
+    coordinates: dict[int, tuple[float, float]]
+    source_path: str
+def euclidean_rounded(a: tuple[float, float], b: tuple[float, float]) -> int:
+    return int(math.hypot(a[0] - b[0], a[1] - b[1]) + 0.5)
+def parse_convrp_vrp(path: Path, set_name: str) -> DeterministicInstance:
+    header: dict[str, str] = {}
+    section: str | None = None
+    coords: dict[int, tuple[float, float]] = {}
+    day_demands: dict[int, list[int]] = {}
+    depot_xy: tuple[float, float] | None = None
+    for raw in path.read_text(encoding="utf-8", errors="ignore").splitlines():
+        line = raw.strip()
+        if not line:
+            continue
+        if section is None and ":" in line:
+            key, value = line.split(":", 1)
+            header[key.strip().upper()] = value.strip()
+            continue
+        upper = line.upper()
+        if upper in {"NODE_COORD_SECTION", "DEMAND_SECTION", "SVC_TIME_SECTION", "DEPOT_SECTION", "EOF"}:
+            section = None if upper == "EOF" else upper
+            continue
+        if section == "NODE_COORD_SECTION":
+            parts = line.split()
+            if len(parts) >= 3:
+                coords[int(parts[0])] = (float(parts[1]), float(parts[2]))
+        elif section == "DEMAND_SECTION":
+            parts = line.split()
+            if len(parts) >= 2:
+                day_demands[int(parts[0])] = [int(float(token)) for token in parts[1:]]
+        elif section == "DEPOT_SECTION":
+            if line != "-1":
+                parts = line.split()

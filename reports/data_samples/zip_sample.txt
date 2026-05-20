@@ -1,0 +1,16 @@
+source=/mnt/e/currentWORK/AAA_Project/P3/data/raw/ConVRP_0.7.zip
+file_type=.zip
+
+readme.txt	1429
+Christofides_1_5_0.7.vrp	4580
+Christofides_10_5_0.7.vrp	18460
+Christofides_11_5_0.7.vrp	10612
+Christofides_12_5_0.7.vrp	9016
+Christofides_2_5_0.7.vrp	6795
+Christofides_3_5_0.7.vrp	8901
+Christofides_4_5_0.7.vrp	13362
+Christofides_5_5_0.7.vrp	17773
+Christofides_6_5_0.7.vrp	4745
+Christofides_7_5_0.7.vrp	7064
+Christofides_8_5_0.7.vrp	9239
+Christofides_9_5_0.7.vrp	13887
