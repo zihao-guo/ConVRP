@@ -32,6 +32,9 @@ Do not use legacy `processed/instances/**` files as optimization inputs.
 
 ## Environment
 
+Python dependencies and fallback environment creation commands are documented in `requirements.txt`.
+The preferred path is still to use the existing environment rather than recreate it.
+
 Activate the required environment:
 
 ```bash

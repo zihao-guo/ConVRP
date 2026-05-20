@@ -1,0 +1,30 @@
+# Reproduction Python requirements and environment bootstrap notes.
+#
+# Primary rule for this project:
+#   Use the existing conda environment whenever it is usable.
+#
+# Existing environment expected by the reproduction workflow:
+#   /home/zeio99/miniconda3/envs/p3-cvrpsd
+#
+# Activate the existing environment:
+#   source /home/zeio99/miniconda3/etc/profile.d/conda.sh
+#   conda activate /home/zeio99/miniconda3/envs/p3-cvrpsd
+#
+# Only if that environment is missing or unusable, recreate it at the same path:
+#   source /home/zeio99/miniconda3/etc/profile.d/conda.sh
+#   conda create -p /home/zeio99/miniconda3/envs/p3-cvrpsd python=3.11 -y
+#   conda activate /home/zeio99/miniconda3/envs/p3-cvrpsd
+#   python -m pip install --upgrade pip
+#   python -m pip install -r requirements.txt
+#
+# Gurobi license:
+#   Put the license at /mnt/c/Users/User/Downloads/gurobi.lic, or export
+#   GRB_LICENSE_FILE to another valid readable license path before running
+#   scripts/check_environment.py.
+#
+# Verification:
+#   source scripts/activate_env.sh
+#   PYTHONPATH=src:. python3 scripts/check_environment.py
+
+gurobipy==13.0.1
+pypdf==6.8.0
