@@ -8,6 +8,7 @@ PYTHON_VERSION="3.11"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 REQUIREMENTS_FILE="$PROJECT_ROOT/requirements.txt"
+CREATED_ENV=0
 
 fail_activate_env() {
   echo "$1" >&2
@@ -29,12 +30,19 @@ if [[ ! -d "$CONDA_ENV" ]]; then
   fi
   echo "Creating conda environment from scratch: $CONDA_ENV" >&2
   conda create -p "$CONDA_ENV" "python=$PYTHON_VERSION" -y
-  conda activate "$CONDA_ENV"
-  python -m pip install --upgrade pip
-  python -m pip install -r "$REQUIREMENTS_FILE"
-else
-  conda activate "$CONDA_ENV"
+  CREATED_ENV=1
 fi
+
+conda activate "$CONDA_ENV"
+
+if [[ ! -f "$REQUIREMENTS_FILE" ]]; then
+  fail_activate_env "Missing requirements file: $REQUIREMENTS_FILE"
+fi
+
+if [[ "$CREATED_ENV" == "1" ]]; then
+  python -m pip install --upgrade pip
+fi
+python -m pip install -r "$REQUIREMENTS_FILE"
 
 if [[ -f "$GUROBI_LICENSE" ]]; then
   export GRB_LICENSE_FILE="$GUROBI_LICENSE"

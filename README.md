@@ -34,7 +34,7 @@ Do not use legacy `processed/instances/**` files as optimization inputs.
 
 Python dependencies and the from-scratch conda bootstrap are documented in `requirements.txt`.
 
-Create the required environment if missing, install dependencies, and activate it:
+Create or synchronize the required environment, install dependencies, and activate it:
 
 ```bash
 source scripts/activate_env.sh

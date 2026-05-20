@@ -4,8 +4,7 @@
 #   source scripts/activate_env.sh
 #
 # That command creates the required conda environment if it is missing,
-# installs this requirements file, and activates the environment. If the
-# environment already exists, it only activates it.
+# installs or verifies this requirements file, and activates the environment.
 #
 # Existing environment expected by the reproduction workflow:
 #   /home/zeio99/miniconda3/envs/p3-cvrpsd
