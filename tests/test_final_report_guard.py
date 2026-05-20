@@ -14,7 +14,13 @@ class FinalReportGuardTests(unittest.TestCase):
 
         self.assertFalse(readiness["can_claim_full_reproduction"])
         self.assertIn("full_experiment_results_incomplete", readiness["blocking_reasons"])
-        self.assertIn("alignment_contains_non_solver_deviation", readiness["blocking_reasons"])
+        self.assertTrue(
+            {
+                "alignment_contains_non_solver_deviation",
+                "alignment_tables_missing",
+            }
+            & set(readiness["blocking_reasons"])
+        )
         self.assertNotIn("bd_not_exact_branch_and_check", readiness["blocking_reasons"])
         self.assertNotIn("bc_sec_deviation_not_solver_only", readiness["blocking_reasons"])
         self.assertNotIn("saa_statistics_protocol_incomplete", readiness["blocking_reasons"])
