@@ -32,10 +32,9 @@ Do not use legacy `processed/instances/**` files as optimization inputs.
 
 ## Environment
 
-Python dependencies and fallback environment creation commands are documented in `requirements.txt`.
-The preferred path is still to use the existing environment rather than recreate it.
+Python dependencies and the from-scratch conda bootstrap are documented in `requirements.txt`.
 
-Activate the required environment:
+Create the required environment if missing, install dependencies, and activate it:
 
 ```bash
 source scripts/activate_env.sh
